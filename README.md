@@ -2,6 +2,9 @@
 
 A terminal-based arcade game inspired by the classic Frogger, written in C using ncurses.
 
+See [this blog post](https://termplay.github.io/posts/byte-hopper-terminal-frogger.html) for more information.
+
+
 ```
  _______________________________________________
 | SCORE: 0    LIVES: 3    LEVEL: 1    P=pause  |
