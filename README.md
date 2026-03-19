@@ -6,7 +6,7 @@ A terminal-based arcade game inspired by the classic Frogger, written in C using
  _______________________________________________
 | SCORE: 0    LIVES: 3    LEVEL: 1    P=pause  |
 |  ___   ___   ___   ___   ___                 |
-| | 1 | | 2 | | 3 | | 4 | | 5 |               |
+| | 1 | | 2 | | 3 | | 4 | | 5 |                |
 |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ river ~~~~~|
 |   [===log===]        [===log===]             |
 |        [turtle]   [turtle]                   |
@@ -18,7 +18,7 @@ A terminal-based arcade game inspired by the classic Frogger, written in C using
 |     <--car>       <truck-->                  |
 |  <--car>    <car>      <truck-->             |
 |       <car>      <--truck-->    <car>        |
-|  <--truck-->          <--car>               |
+|  <--truck-->          <--car>                |
 |_________________^____________________________|
 ```
 
