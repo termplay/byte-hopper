@@ -61,14 +61,30 @@ static bool obj_covers(const Obj *o, int col)
 
 static void spawn_objects(Game *g)
 {
-    float boost = 1.0f + (float)(g->level - 1) * 0.15f;
+    /*
+     * Difficulty scaling:
+     * - Speed increases 12% per level, capped at 2.5x base
+     * - Extra objects added every 3 levels (+1 per lane), capped at +3
+     * This keeps things challenging but always beatable.
+     */
+    float boost = 1.0f + (float)(g->level - 1) * 0.12f;
+    if (boost > 2.5f) boost = 2.5f;
+
+    int extra_per_lane = (g->level - 1) / 3;
+    if (extra_per_lane > 3) extra_per_lane = 3;
+
     g->n_objs = 0;
 
     for (int l = 0; l < N_LANES && g->n_objs < MAX_OBJS; l++) {
         const LaneDef *ld = &LANE_DEFS[l];
-        float slot = (float)GAME_COLS / (float)ld->count;
+        int count = ld->count + extra_per_lane;
+        /* Ensure minimum spacing: objects shouldn't overlap */
+        int max_fit = GAME_COLS / (ld->width + 2);
+        if (count > max_fit) count = max_fit;
 
-        for (int i = 0; i < ld->count && g->n_objs < MAX_OBJS; i++) {
+        float slot = (float)GAME_COLS / (float)count;
+
+        for (int i = 0; i < count && g->n_objs < MAX_OBJS; i++) {
             Obj *o    = &g->objs[g->n_objs++];
             o->kind   = ld->kind;
             o->row    = ld->row;
@@ -124,6 +140,15 @@ void game_init(Game *g)
 void game_tick(Game *g)
 {
     if (g->game_over || g->paused) return;
+
+    /* Level-clear countdown: freeze gameplay, show screen */
+    if (g->level_clear_timer > 0) {
+        g->level_clear_timer--;
+        if (g->level_clear_timer <= 0) {
+            next_level(g);
+        }
+        return;
+    }
 
     /* Count down death animation; objects still move during it */
     if (!g->frog.alive) {
@@ -209,14 +234,14 @@ void game_tick(Game *g)
         }
         if (g->homes_filled >= HOME_COUNT) {
             g->score += 200 * g->level;
-            next_level(g);
+            g->level_clear_timer = LEVEL_CLEAR_FRAMES;
         }
     }
 }
 
 void game_move_frog(Game *g, int drow, int dcol)
 {
-    if (!g->frog.alive || g->game_over || g->paused) return;
+    if (!g->frog.alive || g->game_over || g->paused || g->level_clear_timer > 0) return;
 
     int new_row = g->frog.row + drow;
     int new_col = g->frog.col + dcol;

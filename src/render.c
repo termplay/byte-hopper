@@ -165,7 +165,7 @@ static void draw_frog(const Game *g)
 static void draw_status(const Game *g)
 {
     attron(COLOR_PAIR(CP_STATUS) | A_BOLD);
-    mvprintw(ROW_STATUS, 1, "FROGGER  Score:%06d", g->score);
+    mvprintw(ROW_STATUS, 1, "BYTE HOPPER  Score:%06d", g->score);
     mvaddstr(ROW_STATUS, 25, "  Lives:");
     attroff(COLOR_PAIR(CP_STATUS) | A_BOLD);
 
@@ -193,7 +193,7 @@ static void draw_game_over(const Game *g)
     mvaddstr(mr + 1, mc, "  |        GAME  OVER         |  ");
     mvprintw(mr + 2, mc, "  |    Final Score: %06d     |  ", g->score);
     mvprintw(mr + 3, mc, "  |       Level reached: %-2d   |  ", g->level);
-    mvaddstr(mr + 4, mc, "  |   Press  R  to restart    |  ");
+    mvaddstr(mr + 4, mc, "  |  Press R for high scores  |  ");
     mvaddstr(mr + 5, mc, "  +---------------------------+  ");
     attroff(COLOR_PAIR(CP_DEAD) | A_BOLD);
 }
@@ -205,14 +205,154 @@ static void draw_paused(void)
 
     attron(COLOR_PAIR(CP_STATUS) | A_BOLD | A_REVERSE);
     mvaddstr(mr,     mc, "  +---------------------+  ");
-    mvaddstr(mr + 1, mc, "  |  PAUSED – press P   |  ");
+    mvaddstr(mr + 1, mc, "  |  PAUSED - press P   |  ");
     mvaddstr(mr + 2, mc, "  +---------------------+  ");
     attroff(COLOR_PAIR(CP_STATUS) | A_BOLD | A_REVERSE);
+}
+
+/* ── Level-clear overlay ───────────────────────────────────────────────── */
+static void draw_level_clear(const Game *g)
+{
+    int mr = (ROW_SAFE + ROW_STATUS) / 2 - 2;
+    int mc = GAME_COLS / 2 - 16;
+
+    attron(COLOR_PAIR(CP_HOME_OK) | A_BOLD);
+    mvaddstr(mr,     mc, "  +-------------------------------+  ");
+    mvprintw(mr + 1, mc, "  |     LEVEL %2d  COMPLETE!       |  ", g->level);
+    mvprintw(mr + 2, mc, "  |        Score: %06d          |  ", g->score);
+    mvaddstr(mr + 3, mc, "  |                               |  ");
+    mvaddstr(mr + 4, mc, "  |     Get ready for next level  |  ");
+    mvaddstr(mr + 5, mc, "  +-------------------------------+  ");
+    attroff(COLOR_PAIR(CP_HOME_OK) | A_BOLD);
+}
+
+/* ── Start screen ──────────────────────────────────────────────────────── */
+void render_start_screen(const HighScore scores[], int n_scores)
+{
+    erase();
+
+    int mc = GAME_COLS / 2;
+    int row = 0;
+
+    attron(COLOR_PAIR(CP_FROG) | A_BOLD);
+    mvaddstr(row++, mc - 24, " ____        _         _   _                             ");
+    mvaddstr(row++, mc - 24, "| __ ) _   _| |_ ___  | | | | ___  _ __  _ __   ___ _ _ ");
+    mvaddstr(row++, mc - 24, "|  _ \\| | | | __/ _ \\ | |_| |/ _ \\| '_ \\| '_ \\ / _ \\ '__|");
+    mvaddstr(row++, mc - 24, "| |_) | |_| | ||  __/ |  _  | (_) | |_) | |_) |  __/ |  ");
+    mvaddstr(row++, mc - 24, "|____/ \\__, |\\__\\___| |_| |_|\\___/| .__/| .__/ \\___|_|  ");
+    mvaddstr(row++, mc - 24, "       |___/                      |_|   |_|              ");
+    attroff(COLOR_PAIR(CP_FROG) | A_BOLD);
+
+    row++;
+    attron(COLOR_PAIR(CP_STATUS));
+    mvaddstr(row++, mc - 20, "Inspired by the classic Frogger arcade game");
+    attroff(COLOR_PAIR(CP_STATUS));
+
+    row++;
+    attron(COLOR_PAIR(CP_STATUS) | A_BOLD);
+    mvaddstr(row++, mc - 16, "--- HOW TO PLAY ---");
+    attroff(COLOR_PAIR(CP_STATUS) | A_BOLD);
+
+    attron(COLOR_PAIR(CP_STATUS));
+    mvaddstr(row++, mc - 25, "  Arrow keys / WASD   Move the frog");
+    mvaddstr(row++, mc - 25, "  P                   Pause / unpause");
+    mvaddstr(row++, mc - 25, "  Q                   Quit");
+    row++;
+    mvaddstr(row++, mc - 25, "  Cross the road avoiding cars and trucks.");
+    mvaddstr(row++, mc - 25, "  Cross the river by hopping on logs and");
+    mvaddstr(row++, mc - 25, "  turtles. Land on all 5 lily pads to");
+    mvaddstr(row++, mc - 25, "  complete the level. Each level gets");
+    mvaddstr(row++, mc - 25, "  progressively harder!");
+    attroff(COLOR_PAIR(CP_STATUS));
+
+    row += 2;
+    attron(COLOR_PAIR(CP_STATUS) | A_BOLD);
+    mvaddstr(row++, mc - 16, "--- HIGH SCORES ---");
+    attroff(COLOR_PAIR(CP_STATUS) | A_BOLD);
+
+    if (n_scores == 0) {
+        attron(COLOR_PAIR(CP_STATUS));
+        mvaddstr(row++, mc - 10, "No scores yet!");
+        attroff(COLOR_PAIR(CP_STATUS));
+    } else {
+        for (int i = 0; i < n_scores && i < MAX_HIGHSCORES; i++) {
+            attron(COLOR_PAIR(i == 0 ? CP_HOME_OK : CP_STATUS) | (i == 0 ? A_BOLD : 0));
+            mvprintw(row++, mc - 18, "  %2d.  %-10s  %06d  (Level %d)",
+                     i + 1, scores[i].name, scores[i].score, scores[i].level);
+            attroff(COLOR_PAIR(i == 0 ? CP_HOME_OK : CP_STATUS) | (i == 0 ? A_BOLD : 0));
+        }
+    }
+
+    row += 2;
+    attron(COLOR_PAIR(CP_FROG) | A_BOLD | A_BLINK);
+    mvaddstr(row, mc - 14, "Press ENTER to start!");
+    attroff(COLOR_PAIR(CP_FROG) | A_BOLD | A_BLINK);
+
+    refresh();
+}
+
+/* ── Name input screen ─────────────────────────────────────────────────── */
+void render_name_input(int score, int level, const char *name, int cursor)
+{
+    erase();
+
+    int mc = GAME_COLS / 2;
+    int row = 3;
+
+    attron(COLOR_PAIR(CP_HOME_OK) | A_BOLD);
+    mvaddstr(row++, mc - 12, "*** NEW HIGH SCORE! ***");
+    attroff(COLOR_PAIR(CP_HOME_OK) | A_BOLD);
+
+    row++;
+    attron(COLOR_PAIR(CP_STATUS) | A_BOLD);
+    mvprintw(row++, mc - 14, "Score: %06d    Level: %d", score, level);
+    attroff(COLOR_PAIR(CP_STATUS) | A_BOLD);
+
+    row += 2;
+    attron(COLOR_PAIR(CP_STATUS));
+    mvaddstr(row++, mc - 14, "Enter your name:");
+    attroff(COLOR_PAIR(CP_STATUS));
+
+    row++;
+    attron(COLOR_PAIR(CP_FROG) | A_BOLD);
+    mvprintw(row, mc - 7, "[ %-15s]", name);
+    /* Show cursor */
+    mvaddch(row, mc - 5 + cursor, '_' | A_BLINK);
+    attroff(COLOR_PAIR(CP_FROG) | A_BOLD);
+
+    row += 3;
+    attron(COLOR_PAIR(CP_STATUS));
+    mvaddstr(row, mc - 14, "Press ENTER to confirm");
+    attroff(COLOR_PAIR(CP_STATUS));
+
+    refresh();
+}
+
+/* ── Level-clear screen (called from main loop) ───────────────────────── */
+void render_level_clear(const Game *g)
+{
+    /* Render the normal game frame underneath */
+    erase();
+    draw_backgrounds();
+    draw_road_dividers();
+    draw_homes(g);
+    for (int i = 0; i < g->n_objs; i++) {
+        draw_obj(&g->objs[i]);
+    }
+    draw_frog(g);
+    draw_status(g);
+    draw_level_clear(g);
+    refresh();
 }
 
 /* ── Main render entry point ────────────────────────────────────────────── */
 void render_frame(const Game *g)
 {
+    if (g->level_clear_timer > 0) {
+        render_level_clear(g);
+        return;
+    }
+
     erase();
 
     draw_backgrounds();

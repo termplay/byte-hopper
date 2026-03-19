@@ -1,6 +1,6 @@
-# Frogger
+# Byte Hopper
 
-A terminal-based implementation of the classic Frogger arcade game, written in C using ncurses.
+A terminal-based arcade game inspired by the classic Frogger, written in C using ncurses.
 
 ```
  _______________________________________________
@@ -74,10 +74,23 @@ The compiled binary is placed in `build/`.
 make run
 
 # Or run the binary directly after building
-./build/frogger
+./build/byte-hopper
 ```
 
 > The game requires a terminal at least **80 columns wide** and **15 rows tall**.
+
+## Installing
+
+```sh
+# Install to /usr/local/bin (may need sudo)
+sudo make install
+
+# Install to a custom prefix
+make install PREFIX=$HOME/.local
+
+# Uninstall
+sudo make uninstall
+```
 
 ## Controls
 
@@ -94,15 +107,25 @@ make run
 ## How to Play
 
 1. Guide the frog from the bottom of the screen to one of the **5 lily pads** at the top.
-2. **Road zone** — dodge cars and trucks. Getting hit costs a life.
-3. **River zone** — hop onto logs and turtles to cross. Falling in the water costs a life.
+2. **Road zone** -- dodge cars and trucks. Getting hit costs a life.
+3. **River zone** -- hop onto logs and turtles to cross. Falling in the water costs a life.
 4. Land on all 5 lily pads to complete the level and advance.
-5. Each level increases the speed of all vehicles and platforms.
+5. Each level gets progressively harder -- vehicles and platforms move faster, and more obstacles appear.
 
 **Scoring:**
 - `+10` points for each step forward
-- `+50 × level` for reaching a lily pad
-- `+200 × level` for filling all 5 pads (level complete)
+- `+50 x level` for reaching a lily pad
+- `+200 x level` for filling all 5 pads (level complete)
+
+## Features
+
+- **Start screen** with ASCII art title, instructions, and high score table
+- **Name entry** for high scores -- prompted when you earn a top-10 spot
+- **Level complete screen** shown between levels
+- **Progressive difficulty** -- speed increases 12% per level (capped at 2.5x) and extra obstacles spawn every 3 levels
+- **Persistent high scores** -- top 10 scores saved to `~/.local/share/byte_hopper/highscores.dat` (respects `XDG_DATA_HOME`)
+- **Death animation** with flashing sprite
+- **Colorful ncurses rendering** with distinct visuals for each object type
 
 ## Project Structure
 
@@ -110,11 +133,12 @@ make run
 c_frogger/
 ├── Makefile
 ├── include/
-│   └── frogger.h      # Types and API declarations
+│   └── frogger.h        # Types and API declarations
 └── src/
-    ├── main.c         # Game loop and input handling
-    ├── game.c         # Game logic and state management
-    └── render.c       # ncurses rendering
+    ├── main.c           # Game loop, input handling, start screen
+    ├── game.c           # Game logic, state management, difficulty scaling
+    ├── render.c         # ncurses rendering (gameplay, overlays, start screen)
+    └── highscore.c      # High score persistence (~/.local/share/byte_hopper/)
 ```
 
 ## Cleaning Up

@@ -5,7 +5,7 @@ CFLAGS  := -std=c11 -Wall -Wextra -Wpedantic -Wshadow \
             -Wstrict-prototypes -Wmissing-prototypes \
             -fstack-protector-strong
 LDFLAGS :=
-TARGET  := build/frogger
+TARGET  := build/byte-hopper
 SRCDIR  := src
 INCDIR  := include
 OBJDIR  := build/obj
@@ -21,7 +21,10 @@ endif
 
 # ── Targets ───────────────────────────────────────────────────────────────
 
-.PHONY: all clean debug release asan run
+PREFIX  ?= /usr/local
+BINDIR  ?= $(PREFIX)/bin
+
+.PHONY: all clean debug release asan run install uninstall
 
 all: debug
 
@@ -53,3 +56,10 @@ clean:
 
 run: debug
 	./$(TARGET)
+
+install: release
+	install -d $(DESTDIR)$(BINDIR)
+	install -m 755 $(TARGET) $(DESTDIR)$(BINDIR)/byte-hopper
+
+uninstall:
+	rm -f $(DESTDIR)$(BINDIR)/byte-hopper

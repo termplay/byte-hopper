@@ -26,6 +26,8 @@
 #define MAX_OBJS     40
 #define INIT_LIVES    3
 #define DEATH_FRAMES 18
+#define LEVEL_CLEAR_FRAMES 50   /* ~4 seconds at 12 ticks/sec */
+#define MAX_HIGHSCORES 10
 
 /* Home slot left-edge columns (shared by game.c and render.c) */
 extern const int HOME_COLS[HOME_COUNT];
@@ -58,6 +60,13 @@ typedef struct {
 
 typedef struct { bool occupied; } Home;
 
+/* ── High score entry ──────────────────────────────────────────────────── */
+typedef struct {
+    int  score;
+    int  level;
+    char name[16];
+} HighScore;
+
 /* ── Full game state ────────────────────────────────────────────────────── */
 typedef struct {
     Frog  frog;
@@ -70,6 +79,7 @@ typedef struct {
     int   homes_filled;
     bool  game_over;
     bool  paused;
+    int   level_clear_timer;    /* >0 means showing level-complete screen */
 } Game;
 
 /* ── game.c API ─────────────────────────────────────────────────────────── */
@@ -81,5 +91,17 @@ void game_move_frog(Game *g, int drow, int dcol);
 void render_init(void);
 void render_cleanup(void);
 void render_frame(const Game *g);
+void render_start_screen(const HighScore scores[], int n_scores);
+void render_level_clear(const Game *g);
+
+/* ── render.c — name input ─────────────────────────────────────────────── */
+void render_name_input(int score, int level, const char *name, int cursor);
+
+/* ── highscore.c API ───────────────────────────────────────────────────── */
+int  highscore_load(HighScore scores[], int max);
+void highscore_save(const HighScore scores[], int n);
+bool highscore_qualifies(const HighScore scores[], int n, int max, int score);
+int  highscore_insert(HighScore scores[], int n, int max, int score, int level,
+                      const char *name);
 
 #endif /* FROGGER_FROGGER_H */
