@@ -177,8 +177,8 @@ static void draw_status(const Game *g)
     attroff(COLOR_PAIR(CP_FROG) | A_BOLD);
 
     attron(COLOR_PAIR(CP_STATUS) | A_BOLD);
-    mvprintw(ROW_STATUS, 46, " Level:%-3d", g->level);
-    mvaddstr(ROW_STATUS, 57, " Arrows/WASD  [P]ause  [Q]uit");
+    mvprintw(ROW_STATUS, 40, " Level:%-2d", g->level);
+    mvaddstr(ROW_STATUS, 50, "  WASD [P]ause [Q]uit");
     attroff(COLOR_PAIR(CP_STATUS) | A_BOLD);
 }
 
