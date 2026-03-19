@@ -37,7 +37,7 @@ brew install ncurses
 
 **Debian / Ubuntu:**
 ```sh
-sudo apt install libncurses-dev
+sudo apt install clang libncurses-dev
 ```
 
 **Fedora / RHEL:**
